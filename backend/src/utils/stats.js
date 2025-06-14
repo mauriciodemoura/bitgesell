@@ -1,6 +1,36 @@
-// Utility intentionally unused by routes (candidate should refactor)
-function mean(arr) {
-  return arr.reduce((a, b) => a + b, 0) / arr.length;
+const fs = require('fs').promises;
+
+// Function to calculate statistics
+function calculateStats(items) {
+  if (!items || items.length === 0) {
+    return {
+      total: 0,
+      averagePrice: 0
+    };
+  }
+
+  const total = items.length;
+  const totalPrice = items.reduce((acc, cur) => acc + (cur.price || 0), 0);
+  const averagePrice = totalPrice / total;
+
+  return {
+    total,
+    averagePrice: parseFloat(averagePrice.toFixed(2))
+  };
 }
 
-module.exports = { mean };
+// Function to get statistics from the file
+async function getFileStats(filePath) {
+  try {
+    const fileStat = await fs.stat(filePath);
+    return fileStat.mtime;
+  } catch (err) {
+    console.error('Error:', err);
+    return null;
+  }
+}
+
+module.exports = {
+  calculateStats,
+  getFileStats
+};
