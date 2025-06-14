@@ -3,9 +3,9 @@ const fs = require('fs').promises;
 const path = require('path');
 const router = express.Router();
 const { calculateStats, getFileStats } = require('../utils/stats');
-
 const DATA_PATH = path.join(__dirname, '../../../data/items.json');
 
+// Cache to store computed statistics
 let statsCache = {
   data: null,
   lastModified: null,
@@ -24,8 +24,7 @@ async function refreshStats() {
     
     const raw = await fs.readFile(DATA_PATH, 'utf8');
     const items = JSON.parse(raw);
-    const fileModified = await getFileStats();
-    
+    const fileModified = await getFileStats(DATA_PATH);    
     const stats = calculateStats(items);
     
     // Update the cache
@@ -45,7 +44,7 @@ async function isCacheValid() {
   }
 
   try {
-    const currentFileModified = await getFileStats();
+    const currentFileModified = await getFileStats(DATA_PATH);
     return currentFileModified && 
            statsCache.lastModified && 
            currentFileModified.getTime() === statsCache.lastModified.getTime();

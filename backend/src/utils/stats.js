@@ -11,7 +11,7 @@ function calculateStats(items) {
 
   const total = items.length;
   const totalPrice = items.reduce((acc, cur) => acc + (cur.price || 0), 0);
-  const averagePrice = totalPrice / total;
+  const averagePrice = total > 0 ? totalPrice / total : 0;
 
   return {
     total,
