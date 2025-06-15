@@ -1,4 +1,5 @@
 import React, { createContext, useCallback, useContext, useState } from 'react';
+import ItemsService from "../services/ItemsService/ItemsService";
 
 const DataContext = createContext();
 
@@ -14,20 +15,19 @@ export function DataProvider({ children }) {
   const fetchItems = useCallback(async ({ q = '', page = 1, limit = 10, signal } = {}) => {
     setLoading(true);
     try {
-      const params = new URLSearchParams({ q, page, limit });
-      const res = await fetch(`http://localhost:3001/api/items?${params}`, { signal }); // Intentional bug: backend ignores limit
-      const json = await res.json();
+      const data = await ItemsService.getItems({ q, page, limit, signal });
+      if (!data) return;
 
-      setTotal(json.total);
-      setPage(json.page);
-      setPageSize(json.pageSize);
-      setHasMore((json.page * json.pageSize) < json.total);
+      setTotal(data.total);
+      setPage(data.page);
+      setPageSize(data.pageSize);
+      setHasMore((data.page * data.pageSize) < data.total);
 
       setItems(prev =>
-        page === 1 ? json.items : [...prev, ...json.items]
+        page === 1 ? data.items : [...prev, ...data.items]
       );
     } catch (err) {
-      if (err.name === 'AbortError') return;
+      if (err.name === 'AbortError' || err.code === 'ERR_CANCELED') return;
       console.error(err);
       setItems([]);
       setTotal(0);
@@ -39,7 +39,7 @@ export function DataProvider({ children }) {
 
   function resetAndFetch(q) {
     setItems([]);
-    setTotal(0);
+    
     setPage(1);
     setHasMore(true);
     setQ(q);
