@@ -6,12 +6,12 @@ import {
   Typography,
   Box,
   Avatar,
-  Chip,
   CircularProgress,
   Tooltip,
 } from "@mui/material";
 import Inventory2OutlinedIcon from '@mui/icons-material/Inventory2Outlined';
 import QueryStatsIcon from '@mui/icons-material/QueryStats';
+import PaidIcon from '@mui/icons-material/Paid';
 import StatsService from "../services/StatsService/StatsService";
 
 function Header() {
@@ -36,6 +36,58 @@ function Header() {
 
   const isHome = location.pathname === "/" || location.pathname.startsWith("/items");
 
+  // InfoBox component for stat display
+  const InfoBox = ({ icon, title, value, loading }) => (
+    <Tooltip title={title} arrow>
+      <Box
+        sx={{
+          display: "flex",
+          alignItems: "center",
+          bgcolor: "rgba(255,255,255,0.92)",
+          px: 2,
+          py: 1,
+          borderRadius: 2,
+          boxShadow: 1,
+          minWidth: 120,
+          minHeight: 46,
+          gap: 1.5,
+        }}
+      >
+        <Avatar
+          sx={{
+            bgcolor: "primary.light",
+            color: "primary.dark",
+            width: 32,
+            height: 32,
+            fontSize: 18,
+            mr: 1,
+            boxShadow: 1,
+          }}
+        >
+          {icon}
+        </Avatar>
+        <Box>
+          <Typography
+            variant="body2"
+            sx={{ color: "primary.dark", fontWeight: 500, lineHeight: 1, mb: 0.2 }}
+          >
+            {title}
+          </Typography>
+          {loading ? (
+            <CircularProgress color="inherit" size={16} sx={{ mt: 0.5 }} />
+          ) : (
+            <Typography
+              variant="subtitle1"
+              sx={{ color: "primary.main", fontWeight: 700 }}
+            >
+              {value}
+            </Typography>
+          )}
+        </Box>
+      </Box>
+    </Tooltip>
+  );
+
   return (
     <AppBar
       position="sticky"
@@ -48,16 +100,22 @@ function Header() {
         py: 0.5,
       }}
     >
-      <Toolbar sx={{
-        display: "flex", justifyContent: "space-between", alignItems: "center", px: 2, minHeight: 72
-      }}>
+      <Toolbar
+        sx={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          px: 2,
+          minHeight: 72,
+        }}
+      >
         <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
           <Avatar
             sx={{
               bgcolor: "#fff",
               color: "primary.main",
               boxShadow: 2,
-              mr: 1
+              mr: 1,
             }}
           >
             <Inventory2OutlinedIcon fontSize="medium" />
@@ -80,59 +138,32 @@ function Header() {
           </Typography>
         </Box>
 
-        <Box sx={{ display: "flex", alignItems: "center", gap: 3 }}>
-          <Tooltip title="Total registered items" arrow>
-            <Chip
-              icon={<QueryStatsIcon />}
-              label={
-                loading ? (
-                  <CircularProgress color="inherit" size={16} sx={{ ml: 1, mr: 1 }} />
-                ) : (
+        <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+          <InfoBox
+            icon={<QueryStatsIcon />}
+            title="Total registered items"
+            loading={loading}
+            value={
+              <span>
+                <b>{stats?.total ?? "--"}</b> items
+              </span>
+            }
+          />
+          <InfoBox
+            icon={<PaidIcon />}
+            title="Average item price"
+            loading={loading}
+            value={
+              stats
+                ? (
                   <span>
-                    <b>{stats?.total ?? "--"}</b> items
-                  </span>
-                )
-              }
-              variant="outlined"
-              sx={{
-                bgcolor: "rgba(255,255,255,0.85)",
-                fontWeight: 600,
-                fontSize: 15,
-                color: "primary.dark",
-                px: 1.5,
-                boxShadow: 1,
-                borderRadius: 2
-              }}
-            />
-          </Tooltip>
-          <Tooltip title="Average item price" arrow>
-            <Chip
-              label={
-                loading ? (
-                  <CircularProgress color="inherit" size={16} sx={{ ml: 1, mr: 1 }} />
-                ) : (
-                  <span>
-                    Average:&nbsp;
                     <b>
-                      {stats
-                        ? `$${Number(stats.averagePrice).toLocaleString('en-US', { minimumFractionDigits: 2 })}`
-                        : "--"}
+                      ${Number(stats.averagePrice).toLocaleString('en-US', { minimumFractionDigits: 2 })}
                     </b>
                   </span>
-                )
-              }
-              variant="outlined"
-              sx={{
-                bgcolor: "rgba(255,255,255,0.85)",
-                fontWeight: 500,
-                fontSize: 15,
-                color: "primary.dark",
-                px: 1.5,
-                boxShadow: 1,
-                borderRadius: 2
-              }}
-            />
-          </Tooltip>
+                ) : "--"
+            }
+          />
         </Box>
       </Toolbar>
     </AppBar>
